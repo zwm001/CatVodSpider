@@ -4,6 +4,7 @@ import android.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64 as ApacheCommonsBase64;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
