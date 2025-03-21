@@ -12,6 +12,3 @@ tasks.register('clean', Delete) {
 project.ext {
     okhttpVersion = '5.0.0-alpha.14'
 }
-dependencies {
-    implementation 'commons-codec:commons-codec:1.15' // 确保使用最新版本
-}
