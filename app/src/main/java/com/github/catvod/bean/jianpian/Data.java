@@ -11,8 +11,10 @@ import java.util.List;
 
 public class Data {
 
-    @SerializedName(value = "jump_id", alternate = "id")
+    @SerializedName("jump_id")
     private String jumpId;
+    @SerializedName("id")
+    private String id;
     @SerializedName(value = "thumbnail", alternate = "path")
     private String thumbnail;
     @SerializedName("title")
@@ -24,24 +26,30 @@ public class Data {
     @SerializedName("playlist")
     private Value playlist;
     @SerializedName("year")
-    private Value year;
+    private String year;
     @SerializedName("area")
-    private Value area;
+    private String area;
     @SerializedName("types")
     private List<Value> types;
     @SerializedName("actors")
     private List<Value> actors;
     @SerializedName("directors")
     private List<Value> directors;
-    @SerializedName("btbo_downlist")
-    private List<BtboDown> btboDownlist;
+    @SerializedName("source_list_source")
+    private List<SourceListSource> source_list_source;
+    @SerializedName("dataList")
+    private List<DataList> dataList;
 
     public String getJumpId() {
         return TextUtils.isEmpty(jumpId) ? "" : jumpId;
     }
 
+    public String getId() {
+        return TextUtils.isEmpty(id) ? "" : id;
+    }
+
     public String getThumbnail() {
-        return TextUtils.isEmpty(thumbnail) ? "" : thumbnail + "@Referer=www.jianpianapp.com@User-Agent=jianpian-version362";
+        return TextUtils.isEmpty(thumbnail) ? "" : "http://img1.vbwus.com" + thumbnail;
     }
 
     public String getTitle() {
@@ -61,11 +69,11 @@ public class Data {
     }
 
     public String getYear() {
-        return year == null ? "" : year.getTitle();
+        return year == null ? "" : year;
     }
 
     public String getArea() {
-        return area == null ? "" : area.getTitle();
+        return area == null ? "" : area;
     }
 
     public String getTypes() {
@@ -80,12 +88,20 @@ public class Data {
         return directors == null ? "" : getValues(directors, true);
     }
 
-    public List<BtboDown> getBtboDownlist() {
-        return btboDownlist == null ? Collections.emptyList() : btboDownlist;
+    public List<SourceListSource> getSourcelistsource() {
+        return source_list_source == null ? Collections.emptyList() : source_list_source;
+    }
+
+    public List<DataList> getDataList() {
+        return dataList == null ? Collections.emptyList() : dataList;
+    }
+
+    public Vod homeVod() {
+        return new Vod(getJumpId(), getTitle(), getThumbnail());
     }
 
     public Vod vod() {
-        return new Vod(getJumpId(), getTitle(), getThumbnail(), getMask());
+        return new Vod(getId(), getTitle(), getThumbnail(), getMask());
     }
 
     public String getValues(List<Value> items, boolean link) {
@@ -94,14 +110,7 @@ public class Data {
         return Util.substring(sb.toString());
     }
 
-    public String getPlayUrl() {
-        StringBuilder sb = new StringBuilder();
-        for (BtboDown value : getBtboDownlist()) sb.append(value.getVal()).append("#");
-        return Util.substring(sb.toString());
-    }
-
     public static class Value {
-
         @SerializedName(value = "title", alternate = "name")
         private String title;
 
@@ -118,13 +127,107 @@ public class Data {
         }
     }
 
-    public static class BtboDown {
+    public static class SourceListSource {
+        @SerializedName("name")
+        private String name;
+        @SerializedName("source_list")
+        private List<SourceList> source_list;
 
-        @SerializedName("val")
-        private String val;
+        public String getName() {
+            return TextUtils.isEmpty(name) ? "" : name;
+        }
 
-        public String getVal() {
-            return TextUtils.isEmpty(val) ? "" : val.replaceAll("ftp", "tvbox-xg:ftp");
+        public List<SourceList> getSourcelist() {
+            return source_list == null ? Collections.emptyList() : source_list;
+        }
+    }
+
+    public static class SourceList {
+        @SerializedName("source_name")
+        private String source_name;
+        @SerializedName("url")
+        private String url;
+
+        public String getSource_name() {
+            return TextUtils.isEmpty(source_name) ? "" : source_name;
+        }
+
+        public String getUrl() {
+            return TextUtils.isEmpty(url) ? "" : url.replaceAll("ftp", "tvbox-xg:ftp");
+        }
+    }
+
+    public String getVodFrom() {
+        StringBuilder result = new StringBuilder();
+        List<SourceListSource> sources = getSourcelistsource();
+
+        if (sources != null && !sources.isEmpty()) {
+            for (int i = 0; i < sources.size(); i++) {
+                if (i > 0) {
+                    result.append("$$$");
+                }
+                result.append(sources.get(i).getName());
+            }
+        }
+        return result.toString();
+    }
+
+    public String getVodUrl() {
+        StringBuilder result = new StringBuilder();
+        List<SourceListSource> sources = getSourcelistsource();
+
+        if (sources != null && !sources.isEmpty()) {
+            for (SourceListSource source : sources) {
+                List<SourceList> sourceLists = source.getSourcelist();
+                if (sourceLists != null && !sourceLists.isEmpty()) {
+                    for (SourceList item : sourceLists) {
+                        result.append(item.getSource_name())
+                                .append("$")
+                                .append(item.getUrl())
+                                .append("#");
+                    }
+                    if (result.length() > 0) {
+                        result.deleteCharAt(result.length() - 1);
+                    }
+                    result.append("$$$");
+                }
+            }
+            if (result.length() >= 3) {
+                result.delete(result.length() - 3, result.length());
+            }
+        }
+        return result.toString();
+    }
+
+    public static class DataList {
+
+        @SerializedName("id")
+        private String id;
+        @SerializedName(value = "thumbnail", alternate = "path")
+        private String thumbnail;
+        @SerializedName("title")
+        private String title;
+        @SerializedName("mask")
+        private String mask;
+
+        public String getId() {
+            return TextUtils.isEmpty(id) ? "" : id;
+        }
+
+        public String getThumbnail() {
+            return TextUtils.isEmpty(thumbnail) ? "" : "http://img1.vbwus.com" + thumbnail;
+        }
+
+        public String getTitle() {
+            return TextUtils.isEmpty(title) ? "" : title;
+        }
+
+        public String getMask() {
+            return TextUtils.isEmpty(mask) ? "" : mask;
+        }
+
+        public Vod vod() {
+            return new Vod(getId(), getTitle(), getThumbnail(), getMask());
         }
     }
 }
